@@ -40,7 +40,7 @@ def serve_static(filename):
 def page_not_found(e):
     return render_template('error.html'), 404
 
-if __name__ == '__main':
+if __name__ == '__main__':
     import threading
 
     def socket_server():
@@ -52,9 +52,18 @@ if __name__ == '__main':
             data, addr = udp_server_socket.recvfrom(1024)
             data = json.loads(data.decode('utf-8'))
             timestamp = str(datetime.now())
-            with open('storage/data.json', 'a') as data_file:
-                json.dump({timestamp: data}, data_file)
-                data_file.write('\n')
+            data_list = []
+
+            try:
+                with open('storage/data.json', 'r') as data_file:
+                    data_list = json.load(data_file)
+            except FileNotFoundError:
+                data_list = []
+
+            data_list.append({timestamp: data})
+
+            with open('storage/data.json', 'w') as data_file:
+                json.dump(data_list, data_file, indent=4)
 
     socket_thread = threading.Thread(target=socket_server)
     socket_thread.daemon = True
